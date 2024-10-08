@@ -3,24 +3,25 @@ variable "enable_ag" {
   type    = bool
 }
 
-variable "name" {
-  default = "1ad"
+variable "tags" {
+  description = "Tags to apply to the Application Gateway."
+  type        = map(string)
+  default     = {}
 }
 
-variable "location" {
-  default = "westeurope"
+variable "name" {
+  description = "Prefix"
+  default     = "1ad"
 }
 
 variable "rg_name" {
-  description = "Resource Group name."
+  description = "The name of the resource group to create the Application Gateway in."
+  type        = string
 }
 
-variable "rg_location" {
-  description = "Resource Group location."
-}
-
-variable "ag_vnet_name" {
-  description = "Application Gateway VNet name."
+variable "location" {
+  description = "The Azure region where the resources will be created."
+  type        = string
 }
 
 variable "ag_frontend_subnet_id" {
@@ -29,4 +30,10 @@ variable "ag_frontend_subnet_id" {
 
 variable "ag_static_pip_id" {
   description = "Application Gateway static public IP address id."
+}
+
+variable "app_service_fqdn" {
+  description = "The list of FQDNs of the App Service backend."
+  type        = set(string)
+  default     = []
 }
