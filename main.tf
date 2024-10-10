@@ -1,68 +1,39 @@
 locals {
+  name               = var.name
+  rg_name            = var.rg_name
+  location           = var.location
+  frontend_subnet_id = var.frontend_subnet_id
+  static_pip_id      = var.static_pip_id
+  app_service_fqdn   = var.app_service_fqdn
+  tags               = var.tags
+  sku_name           = var.sku_name
+  sku_tier           = var.sku_tier
+  sku_capacity       = var.sku_capacity
+
   frontend_ip_configuration_name = "${var.name}-ag-frontend-ipconfig"
   frontend_port_name_80          = "${var.name}-ag-fp-80"
   frontend_port_name_443         = "${var.name}-ag-fp-443"
   http_listener_name             = "${var.name}-ag-httplstn"
   backend_address_pool_name      = "${var.name}-ag-bap-appservice"
   backend_http_settings_name     = "${var.name}-ag-backend-settings"
-  rg_name                        = var.create_rg ? azurerm_resource_group.rg[0].name : var.rg_name
-  vnet_name                      = var.create_vnet ? azurerm_virtual_network.vnet[0].name : var.vnet_name
-  frontend_subnet_id             = var.create_subnet ? azurerm_subnet.frontend_subnet[0].id : var.frontend_subnet_id
-  static_pip_id                  = var.create_pip ? azurerm_public_ip.pip[0].id : var.static_pip_id
-}
-
-resource "azurerm_resource_group" "rg" {
-  count = var.create_rg ? 1 : 0
-
-  name     = "${var.name}-rg"
-  location = var.location
-}
-
-resource "azurerm_virtual_network" "vnet" {
-  count = var.create_vnet ? 1 : 0
-
-  name                = "${var.name}-vnet"
-  resource_group_name = local.rg_name
-  location            = var.location
-  address_space       = var.vnet_address_space
-}
-
-resource "azurerm_subnet" "frontend_subnet" {
-  count = var.create_subnet ? 1 : 0
-
-  name                 = "${var.name}-frontend-subnet"
-  resource_group_name  = local.rg_name
-  virtual_network_name = local.vnet_name
-  address_prefixes     = var.subnet_address_prefixes
-}
-
-resource "azurerm_public_ip" "pip" {
-  count = var.create_pip ? 1 : 0
-
-  name                = "${var.name}-pip"
-  resource_group_name = local.rg_name
-  location            = var.location
-  # allocation_method   = "Dynamic"
-  allocation_method = "Static"
-  sku               = "Standard"
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway
-resource "azurerm_application_gateway" "appgw" {
+resource "azurerm_application_gateway" "this" {
   count = var.enable_ag ? 1 : 0
 
-  name                = "${var.name}-ag"
+  name                = "${local.name}-ag"
   resource_group_name = local.rg_name
-  location            = var.location
+  location            = local.location
 
   sku {
-    name     = var.sku_name
-    tier     = var.sku_tier
-    capacity = var.sku_capacity
+    name     = local.sku_name
+    tier     = local.sku_tier
+    capacity = local.sku_capacity
   }
 
   gateway_ip_configuration {
-    name      = "${var.name}-ag-gateway-ipconfig"
+    name      = "${local.name}-ag-gateway-ipconfig"
     subnet_id = local.frontend_subnet_id
   }
 
@@ -83,7 +54,7 @@ resource "azurerm_application_gateway" "appgw" {
 
   backend_address_pool {
     name  = local.backend_address_pool_name
-    fqdns = var.app_service_fqdn
+    fqdns = local.app_service_fqdn
   }
 
   backend_http_settings {
@@ -113,5 +84,5 @@ resource "azurerm_application_gateway" "appgw" {
     backend_http_settings_name = local.backend_http_settings_name
   }
 
-  tags = var.tags
+  tags = local.tags
 }

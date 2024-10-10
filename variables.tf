@@ -19,35 +19,8 @@ variable "location" {
   type        = string
 }
 
-# rg
 variable "rg_name" {
   description = "The name of an existing resource group to create the Application Gateway in."
-  type        = string
-  default     = ""
-}
-
-variable "create_rg" {
-  description = "Whether to create a new resource group or use an existing one."
-  type        = bool
-  default     = false
-}
-
-# vnet
-variable "create_vnet" {
-  description = "Whether to create a new vnet or use an existing one."
-  type        = bool
-  default     = false
-}
-
-variable "vnet_address_space" {
-  description = "Address space for the new VNET."
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
-}
-
-# subnet
-variable "vnet_name" {
-  description = "The name of an existing vnet."
   type        = string
   default     = ""
 }
@@ -56,30 +29,10 @@ variable "frontend_subnet_id" {
   description = "Application Gateway frontend subnet id."
 }
 
-variable "create_subnet" {
-  description = "Whether to create a new subnet or use an existing one."
-  type        = bool
-  default     = false
-}
-
-variable "subnet_address_prefixes" {
-  description = "Address space for the new subnet."
-  type        = list(string)
-  default     = ["10.10.1.0/24"]
-}
-
-# pip
-variable "create_pip" {
-  description = "Whether to create a new static public ip or use an existing one."
-  type        = bool
-  default     = false
-}
-
 variable "static_pip_id" {
   description = "Application Gateway static public IP address id."
 }
 
-# ag
 variable "app_service_fqdn" {
   description = "The list of FQDNs of the App Service backend."
   type        = list(string)
