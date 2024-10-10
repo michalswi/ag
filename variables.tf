@@ -25,34 +25,37 @@ variable "rg_name" {
   default     = ""
 }
 
-variable "frontend_subnet_id" {
-  description = "Application Gateway frontend subnet id."
+variable "agw_subnet" {
+  description = "Application Gateway subnet id."
 }
 
-variable "static_pip_id" {
-  description = "Application Gateway static public IP address id."
+variable "agw_public_ip" {
+  description = "Application Gateway static public IP address"
+  type        = string
 }
 
-variable "app_service_fqdn" {
+variable "backend_fqdns" {
   description = "The list of FQDNs of the App Service backend."
   type        = list(string)
   default     = []
 }
 
 variable "sku_name" {
-  description = " The Name of the SKU to use for this Application Gateway."
+  description = "The Name of the SKU to use for this Application Gateway."
   type        = string
   default     = "Standard_v2"
+  # default     = "WAF_v2"
 }
 
 variable "sku_tier" {
   description = "The Tier of the SKU to use for this Application Gateway."
   type        = string
   default     = "Standard_v2"
+  # default     = "WAF_v2"
 }
 
-variable "sku_capacity" {
-  description = "The Capacity of the SKU to use for this Application Gateway."
+variable "max_capacity" {
+  description = "Maximum capacity for autoscaling."
   type        = number
-  default     = 2
+  default     = 3
 }

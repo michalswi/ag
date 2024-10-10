@@ -1,14 +1,14 @@
 ```
 locals {
   location         = "East US"
-  app_service_fqdn = ["myappservice.azurewebsites.net"]
+  backend_fqdns = ["myappservice.azurewebsites.net"]
   tags = {
     Environment = "dev"
     Project     = "dev"
   }
 }
 
-resource "azurerm_resource_group" "rg" {
+resource "azurerm_resource_group" "ag_rg" {
   name     = "<name>"
   location = local.location
   tags     = local.tags
@@ -26,12 +26,12 @@ module "azure_app_gateway" {
   source = "git::git@github.com:michalswi/ag.git?ref=main"
 
   location         = local.location
-  app_service_fqdn = local.app_service_fqdn
+  backend_fqdns = local.backend_fqdns
 
-  rg_name = azurerm_resource_group.rg.name
+  rg_name = azurerm_resource_group.ag_rg.name
 
-  frontend_subnet_id = module.vnet.subnet.id
-  static_pip_id      = module.static_pip.id
+  agw_subnet = module.vnet.subnet
+  agw_public_ip      = module.static_pip
 
   tags = local.tags
 }
