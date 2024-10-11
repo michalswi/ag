@@ -11,7 +11,7 @@ variable "tags" {
 
 variable "name" {
   description = "Prefix"
-  default     = "1ad"
+  default     = "oneadkv"
 }
 
 variable "location" {

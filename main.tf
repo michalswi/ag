@@ -80,9 +80,6 @@ resource "azurerm_application_gateway" "this" {
     port = local.frontend_ports.https.port
   }
 
-  # todo
-  # dynamic "ssl_certificate" {}
-
   backend_address_pool {
     name  = local.backend_address_pool_name
     fqdns = local.backend_fqdns
@@ -129,6 +126,18 @@ resource "azurerm_application_gateway" "this" {
 
   # todo
   # probe {
+  # }
+
+  # todo
+  # identity {
+  #   type = "UserAssigned"
+  #   identity_ids = [module.kv.output.azurerm_user_assigned_identity_id]
+  # }
+
+  # todo
+  # ssl_certificate {
+  #   name     = "ag-ssl-cert"
+  #   key_vault_secret_id = module.kv.output.azurerm_key_vault_certificate_id
   # }
 
   tags = local.tags
