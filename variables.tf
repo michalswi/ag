@@ -21,8 +21,8 @@ variable "rg_name" {
 }
 
 variable "agw_subnet" {
-  description = "Application Gateway subnet."
-  type        = string
+  description = "Application Gateway subnet configuration."
+  type        = map(any)
 }
 
 variable "agw_public_ip" {
