@@ -4,13 +4,13 @@ variable "enable_ag" {
 }
 
 variable "tags" {
-  description = "Tags to apply to the Application Gateway."
+  description = "List of tags."
   type        = map(string)
   default     = {}
 }
 
 variable "name" {
-  description = "Prefix"
+  description = "Resource name prefix."
   default     = "oneadkv"
 }
 
@@ -20,17 +20,18 @@ variable "location" {
 }
 
 variable "rg_name" {
-  description = "The name of an existing resource group to create the Application Gateway in."
+  description = "The name of an existing resource group to create the resource in."
   type        = string
   default     = ""
 }
 
 variable "agw_subnet" {
-  description = "Application Gateway subnet id."
+  description = "Application Gateway subnet."
+  type        = string
 }
 
 variable "agw_public_ip" {
-  description = "Application Gateway static public IP address"
+  description = "Application Gateway static public IP address."
   type        = string
 }
 

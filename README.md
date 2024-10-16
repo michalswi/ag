@@ -19,8 +19,13 @@ resource "azurerm_resource_group" "ag_rg" {
 # }
 
 # module "static_pip" {
-#   (...)
+#  (...)
+#  allocation_method    = "Static"
+#  sku                  = "Standard"
+#  zones                = var.default_availability_zones
+#  ddos_protection_mode = "Enabled"
 # }
+
 
 module "azure_app_gateway" {
   source = "git::git@github.com:michalswi/ag.git?ref=main"
