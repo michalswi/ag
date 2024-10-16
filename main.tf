@@ -8,9 +8,9 @@ locals {
 
   certificate_refs = var.certificate_refs
 
-  agw_public_ip_id  = var.agw_public_ip_id
-  agw_subnet_id     = var.agw_subnet_id
-  agw_private_ip = cidrhost(var.agw_subnet_address_prefixes[0], 16)
+  agw_public_ip_id = var.agw_public_ip_id
+  agw_subnet_id    = var.agw_subnet_id
+  agw_private_ip   = cidrhost(var.agw_subnet_address_prefixes[0], 16)
 
   sku_name     = var.sku_name
   sku_tier     = var.sku_tier
