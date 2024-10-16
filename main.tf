@@ -4,6 +4,10 @@ locals {
   location = var.location
   tags     = var.tags
 
+  key_vault_id = var.key_vault_id
+
+  certificate_refs = var.certificate_refs
+
   agw_public_ip  = var.agw_public_ip
   agw_subnet     = var.agw_subnet
   agw_private_ip = cidrhost(var.agw_subnet.address_prefixes[0], 16)
@@ -33,10 +37,28 @@ locals {
   }
 }
 
+# RBAC or MI - todo
+resource "azurerm_role_assignment" "this" {
+  principal_id         = azurerm_application_gateway.this.identity[0].principal_id
+  role_definition_name = "Key Vault Certificates User"
+  scope                = local.key_vault_id
+}
+# resource "azurerm_user_assigned_identity" "this" {
+#   name                = "${local.name}-mig"
+#   resource_group_name = local.rg_name
+#   location            = local.location
+#   tags                = local.tags
+# }
+
+# ssl certificates
+data "azurerm_key_vault_certificate" "this" {
+  for_each     = { for cert in local.certificate_refs : cert => cert }
+  key_vault_id = local.key_vault_id
+  name         = each.value
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway
 resource "azurerm_application_gateway" "this" {
-  count = var.enable_ag ? 1 : 0
-
   name                = "${local.name}-ag"
   resource_group_name = local.rg_name
   location            = local.location
@@ -84,14 +106,6 @@ resource "azurerm_application_gateway" "this" {
     name  = local.backend_address_pool_name
     fqdns = local.backend_fqdns
   }
-  # dynamic "backend_address_pool" {
-  #   for_each = { for key, value in local.backend_fqdns : key => value }
-
-  #   content {
-  #     name  = "${local.backend_address_pool_name}_${each.key}"
-  #     fqdns = [each.value]
-  #   }
-  # }
 
   # todo
   backend_http_settings {
@@ -103,14 +117,14 @@ resource "azurerm_application_gateway" "this" {
     # pick_host_name_from_backend_address = true
   }
 
-  # todo
   http_listener {
     name                           = local.http_listener_name
     frontend_ip_configuration_name = local.frontend_public_ip_config
     frontend_port_name             = local.frontend_ports.https.name
     protocol                       = "Https"
     # ssl_certificate_name = <todo>
-    # firewall_policy_id = <todo>
+    # firewall_policy_id = azurerm_web_application_firewall_policy.this.id - todo
+
   }
 
   # todo
@@ -122,23 +136,43 @@ resource "azurerm_application_gateway" "this" {
     http_listener_name         = local.http_listener_name
     backend_address_pool_name  = local.backend_address_pool_name
     backend_http_settings_name = local.backend_http_settings_name
+    # priority = 10/100?  - todo
   }
 
+  # todo - MI or RBAC
+  identity {
+    type = "SystemAssigned"
+  }
+
+  # waf - todo
+  # firewall_policy_id = azurerm_web_application_firewall_policy.this.id
+
+  # ssl_certificate - todo
+  ssl_certificate {
+    name                = each.key
+    key_vault_secret_id = data.azurerm_key_vault_certificate.this[each.key].secret_id
+  }
+  # dynamic "ssl_certificate" {
+  #   for_each = { for cert in local.ssl_certificate : cert.name => cert.key_vault_secret_id }
+
+  #   content {
+  #     name = ssl_certificate.key
+  #     key_vault_secret_id = ssl_certificate.value
+  #   }
+  # }
+
   # todo
+  # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#host
   # probe {
-  # }
-
-  # todo
-  # identity {
-  #   type = "UserAssigned"
-  #   identity_ids = [module.kv.output.azurerm_user_assigned_identity_id]
-  # }
-
-  # todo
-  # ssl_certificate {
-  #   name     = "ag-ssl-cert"
-  #   key_vault_secret_id = module.kv.output.azurerm_key_vault_certificate_id
   # }
 
   tags = local.tags
 }
+
+# todo
+# waf
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy
+# resource "azurerm_web_application_firewall_policy" "this" {
+#   name                = "platform_base_firewall_policy"
+#   (...)
+# }

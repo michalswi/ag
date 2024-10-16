@@ -1,8 +1,3 @@
-variable "enable_ag" {
-  default = true
-  type    = bool
-}
-
 variable "tags" {
   description = "List of tags."
   type        = map(string)
@@ -51,12 +46,22 @@ variable "sku_name" {
 variable "sku_tier" {
   description = "The Tier of the SKU to use for this Application Gateway."
   type        = string
-  default     = "Standard_v2"
-  # default     = "WAF_v2"
+  default     = "WAF_v2"
+  # default     = "Standard_v2"
 }
 
 variable "max_capacity" {
   description = "Maximum capacity for autoscaling."
   type        = number
   default     = 3
+}
+
+variable "key_vault_id" {
+  description = "Existing Key Vault id."
+  type        = string
+}
+
+variable "certificate_refs" {
+  description = "Certificates names."
+  type        = list(string)
 }
