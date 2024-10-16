@@ -8,9 +8,9 @@ locals {
 
   certificate_refs = var.certificate_refs
 
-  agw_public_ip  = var.agw_public_ip
-  agw_subnet     = var.agw_subnet
-  agw_private_ip = cidrhost(var.agw_subnet.address_prefixes[0], 16)
+  agw_public_ip_id  = var.agw_public_ip_id
+  agw_subnet_id     = var.agw_subnet_id
+  agw_private_ip = cidrhost(var.agw_subnet_address_prefixes[0], 16)
 
   sku_name     = var.sku_name
   sku_tier     = var.sku_tier
@@ -75,13 +75,13 @@ resource "azurerm_application_gateway" "this" {
 
   gateway_ip_configuration {
     name      = "appGatewayIpConfig"
-    subnet_id = local.agw_subnet.id
+    subnet_id = local.agw_subnet_id
   }
 
   # public
   frontend_ip_configuration {
     name                 = local.frontend_public_ip_config
-    public_ip_address_id = local.public_ip.id
+    public_ip_address_id = local.agw_public_ip_id
   }
 
   # private
@@ -89,7 +89,7 @@ resource "azurerm_application_gateway" "this" {
     name                          = local.frontend_private_ip_config
     private_ip_address_allocation = "Static"
     private_ip_address            = local.agw_private_ip
-    subnet_id                     = local.agw_subnet.id
+    subnet_id                     = local.agw_subnet_id
   }
 
   frontend_port {
@@ -148,10 +148,15 @@ resource "azurerm_application_gateway" "this" {
   # firewall_policy_id = azurerm_web_application_firewall_policy.this.id
 
   # ssl_certificate - todo
-  ssl_certificate {
-    name                = each.key
-    key_vault_secret_id = data.azurerm_key_vault_certificate.this[each.key].secret_id
+  dynamic "ssl_certificate" {
+    for_each = data.azurerm_key_vault_certificate.this
+
+    content {
+      name                = ssl_certificate.key
+      key_vault_secret_id = ssl_certificate.value.secret_id
+    }
   }
+
   # dynamic "ssl_certificate" {
   #   for_each = { for cert in local.ssl_certificate : cert.name => cert.key_vault_secret_id }
 

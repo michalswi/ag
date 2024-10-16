@@ -20,13 +20,18 @@ variable "rg_name" {
   default     = ""
 }
 
-variable "agw_subnet" {
-  description = "Application Gateway subnet configuration."
-  type        = map(any)
+variable "agw_subnet_address_prefixes" {
+  description = "Application Gateway subnet address prefixes."
+  type        = list(string)
 }
 
-variable "agw_public_ip" {
-  description = "Application Gateway static public IP address."
+variable "agw_subnet_id" {
+  description = "Application Gateway subnet id."
+  type        = string
+}
+
+variable "agw_public_ip_id" {
+  description = "Application Gateway static public IP address ID."
   type        = string
 }
 
