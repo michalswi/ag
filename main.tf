@@ -47,8 +47,8 @@ data "azurerm_key_vault_certificate" "this" {
 
 # RBAC
 resource "azurerm_role_assignment" "this" {
-  principal_id         = azurerm_application_gateway.this.identity[0].principal_id
-  role_definition_name = "Key Vault Certificates User"
+  principal_id         = azurerm_user_assigned_identity.this.principal_id
+  role_definition_name = "Key Vault Secrets User"
   scope                = local.key_vault_id
 }
 
@@ -58,11 +58,15 @@ resource "azurerm_user_assigned_identity" "this" {
   location            = local.location
 }
 
-resource "azurerm_key_vault_access_policy" "agw_to_kv" {
+resource "azurerm_key_vault_access_policy" "this" {
   key_vault_id = local.key_vault_id
   tenant_id    = azurerm_user_assigned_identity.this.tenant_id
   object_id    = azurerm_user_assigned_identity.this.principal_id
   certificate_permissions = [
+    "Get",
+    "List"
+  ]
+  secret_permissions = [
     "Get",
     "List"
   ]
@@ -177,6 +181,11 @@ resource "azurerm_application_gateway" "this" {
   # }
 
   tags = local.tags
+
+  depends_on = [
+    azurerm_key_vault_access_policy.this,
+    azurerm_role_assignment.this,
+  ]
 }
 
 # waf - todo
