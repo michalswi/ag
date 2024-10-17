@@ -44,15 +44,15 @@ variable "backend_fqdns" {
 variable "sku_name" {
   description = "The Name of the SKU to use for this Application Gateway."
   type        = string
-  default     = "WAF_v2"
-  # default     = "Standard_v2"
+  default     = "Standard_v2"
+  # default     = "WAF_v2"
 }
 
 variable "sku_tier" {
   description = "The Tier of the SKU to use for this Application Gateway."
   type        = string
-  default     = "WAF_v2"
-  # default     = "Standard_v2"
+  default     = "Standard_v2"
+  # default     = "WAF_v2"
 }
 
 variable "max_capacity" {
