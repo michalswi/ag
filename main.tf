@@ -133,10 +133,6 @@ resource "azurerm_application_gateway" "this" {
     # priority = 10/100?  - todo
   }
 
-  identity {
-    type = "SystemAssigned"
-  }
-
   # waf - todo
   # firewall_policy_id = azurerm_web_application_firewall_policy.this.id
 
