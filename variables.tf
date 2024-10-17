@@ -44,8 +44,8 @@ variable "backend_fqdns" {
 variable "sku_name" {
   description = "The Name of the SKU to use for this Application Gateway."
   type        = string
-  default     = "Standard_v2"
-  # default     = "WAF_v2"
+  default     = "WAF_v2"
+  # default     = "Standard_v2"
 }
 
 variable "sku_tier" {
@@ -67,6 +67,6 @@ variable "key_vault_id" {
 }
 
 variable "certificate_refs" {
-  description = "Certificates names."
-  type        = list(string)
+  description = "TLS/SSL Certificate name."
+  type        = string
 }

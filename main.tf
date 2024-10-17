@@ -37,18 +37,38 @@ locals {
   }
 }
 
-# RBAC
+## ssl certificate
+
+# local.certificate_refs == string
+data "azurerm_key_vault_certificate" "this" {
+  key_vault_id = local.key_vault_id
+  name         = local.certificate_refs
+}
+
+data "azurerm_key_vault_certificate" "default" {
+  key_vault_id = local.key_vault_id
+  name         = "default"
+}
+
+# local.certificate_refs == list(string)
+# data "azurerm_key_vault_certificate" "this" {
+#   for_each     = length(local.certificate_refs) > 0 ? { for cert in local.certificate_refs : cert => cert } : {}
+#   key_vault_id = local.key_vault_id
+#   name         = each.value
+# }
+
+
+## RBAC
 resource "azurerm_role_assignment" "this" {
   principal_id         = azurerm_application_gateway.this.identity[0].principal_id
   role_definition_name = "Key Vault Certificates User"
   scope                = local.key_vault_id
 }
 
-# ssl certificate
-data "azurerm_key_vault_certificate" "this" {
-  for_each     = length(local.certificate_refs) > 0 ? { for cert in local.certificate_refs : cert => cert } : {}
-  key_vault_id = local.key_vault_id
-  name         = each.value
+resource "azurerm_user_assigned_identity" "this" {
+  name                = "${local.name}-identity"
+  resource_group_name = local.rg_name
+  location            = local.location
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway
@@ -116,7 +136,8 @@ resource "azurerm_application_gateway" "this" {
     frontend_ip_configuration_name = local.frontend_public_ip_config
     frontend_port_name             = local.frontend_ports.https.name
     protocol                       = "Https"
-    # ssl_certificate_name = ... - todo
+    ssl_certificate_name           = try(local.certificate_refs, "default")
+    # todo
     # firewall_policy_id = azurerm_web_application_firewall_policy.this.id - todo
 
   }
@@ -133,19 +154,33 @@ resource "azurerm_application_gateway" "this" {
     # priority = 10/100?  - todo
   }
 
+  identity {
+    type = "UserAssigned"
+    identity_ids = [
+      azurerm_user_assigned_identity.this.id,
+    ]
+  }
+
   # waf - todo
   # firewall_policy_id = azurerm_web_application_firewall_policy.this.id
 
-  # ssl certificate - todo
-  dynamic "ssl_certificate" {
-    for_each = data.azurerm_key_vault_certificate.this
-
-    content {
-      name = ssl_certificate.key
-      # key_vault_secret_id = ssl_certificate.value.secret_id
-      key_vault_secret_id = try(ssl_certificate.value.secret_id, "")
-    }
+  ## ssl certificate - todo
+  # local.certificate_refs == string
+  ssl_certificate {
+    name                = try(local.certificate_refs, "default")
+    key_vault_secret_id = try(data.azurerm_key_vault_certificate.this.secret_id, data.azurerm_key_vault_certificate.default.secret_id)
   }
+
+  # local.certificate_refs == list(string)
+  # dynamic "ssl_certificate" {
+  #   for_each = data.azurerm_key_vault_certificate.this
+
+  #   content {
+  #     name = ssl_certificate.key
+  #     # key_vault_secret_id = ssl_certificate.value.secret_id
+  #     key_vault_secret_id = try(ssl_certificate.value.secret_id, "")
+  #   }
+  # }
 
   # probe - todo
   # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#host
@@ -155,8 +190,7 @@ resource "azurerm_application_gateway" "this" {
   tags = local.tags
 }
 
-# todo
-# waf
+# waf - todo
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/web_application_firewall_policy
 # resource "azurerm_web_application_firewall_policy" "this" {
 #   name                = "platform_base_firewall_policy"
