@@ -6,7 +6,10 @@ locals {
 
   key_vault_id = var.key_vault_id
 
-  certificate_refs = length(var.certificate_refs) > 0 ? var.certificate_refs : ["default"]
+  certificate_refs = length(var.certificate_refs) > 0 ? concat(["default"], var.certificate_refs) : ["default"]
+  # certificate_refs = length(var.certificate_refs) > 0 ? var.certificate_refs : ["default"]
+  # todo - change it
+  signed_cert = "ag-ssl-cert"
 
   agw_public_ip_id = var.agw_public_ip_id
   agw_subnet_id    = var.agw_subnet_id
@@ -122,36 +125,43 @@ resource "azurerm_application_gateway" "this" {
     fqdns = local.backend_fqdns
   }
 
-  # todo
   backend_http_settings {
     name                  = local.backend_http_settings_name
     port                  = 443
     protocol              = "Https"
     cookie_based_affinity = "Disabled"
     request_timeout       = 20
+    # trusted_root_certificate_names      = azurerm_key_vault_access_policy.this
     # pick_host_name_from_backend_address = true
   }
 
-  # todo
   http_listener {
     name                           = local.http_listener_name
     frontend_ip_configuration_name = local.frontend_public_ip_config
     frontend_port_name             = local.frontend_ports.https.name
     protocol                       = "Https"
-    ssl_certificate_name           = try(data.azurerm_key_vault_certificate.this["ag-ssl-cert"].name, "default")
+    ssl_certificate_name           = try(data.azurerm_key_vault_certificate.this[local.signed_cert].name, "default")
     # todo
     # firewall_policy_id = azurerm_web_application_firewall_policy.this.id - todo
 
   }
 
-  # todo
-  ssl_certificate {
-    name = try(data.azurerm_key_vault_certificate.this["ag-ssl-cert"].name, "default")
-    key_vault_secret_id = try(
-      data.azurerm_key_vault_certificate.this["ag-ssl-cert"].secret_id,
-      data.azurerm_key_vault_certificate.this["default"].secret_id
-    )
+  dynamic "ssl_certificate" {
+    for_each = data.azurerm_key_vault_certificate.this
+
+    content {
+      name                = ssl_certificate.key
+      key_vault_secret_id = ssl_certificate.value.secret_id
+    }
+
   }
+  # ssl_certificate {
+  #   name = try(data.azurerm_key_vault_certificate.this["ag-ssl-cert"].name, "default")
+  #   key_vault_secret_id = try(
+  #     data.azurerm_key_vault_certificate.this["ag-ssl-cert"].secret_id,
+  #     data.azurerm_key_vault_certificate.this["default"].secret_id
+  #   )
+  # }
 
   # todo
   # connect frontend and backend pool

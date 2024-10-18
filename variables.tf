@@ -69,4 +69,5 @@ variable "key_vault_id" {
 variable "certificate_refs" {
   description = "List of TLS/SSL Certificate names."
   type        = list(string)
+  default     = []
 }
