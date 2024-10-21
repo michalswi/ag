@@ -1,3 +1,9 @@
+variable "enable_logs" {
+  description = "Enable Azure Monitor diagnostics."
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "List of tags."
   type        = map(string)
@@ -70,4 +76,10 @@ variable "certificate_refs" {
   description = "List of TLS/SSL Certificate names."
   type        = list(string)
   default     = []
+}
+
+variable "log_analytics_workspace_id" {
+  description = "Log Analytics workspace id."
+  type        = string
+  default     = ""
 }

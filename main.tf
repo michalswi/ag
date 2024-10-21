@@ -1,8 +1,11 @@
 locals {
-  name     = var.name
-  rg_name  = var.rg_name
-  location = var.location
-  tags     = var.tags
+  enable_logs = var.enable_logs
+
+  tags                       = var.tags
+  name                       = var.name
+  rg_name                    = var.rg_name
+  log_analytics_workspace_id = var.log_analytics_workspace_id
+  location                   = var.location
 
   key_vault_id = var.key_vault_id
 
@@ -37,6 +40,35 @@ locals {
       port = 443
       name = "${var.name}-ag-fp-443"
     }
+  }
+}
+
+resource "azurerm_monitor_diagnostic_setting" "this" {
+  count = local.enable_logs == "true" ? 1 : 0
+
+  name                       = "${local.name}-diag"
+  target_resource_id         = azurerm_application_gateway.this.id
+  log_analytics_workspace_id = local.log_analytics_workspace_id
+
+  enabled_log {
+    category_group = "allLogs"
+  }
+
+  # enabled_log {
+  #   category = "ApplicationGatewayAccessLog"
+  # }
+
+  # enabled_log {
+  #   category = "ApplicationGatewayPerformanceLog"
+  # }
+
+  # enabled_log {
+  #   category = "ApplicationGatewayFirewallLog"
+  # }
+
+  metric {
+    category = "AllMetrics"
+    enabled  = true
   }
 }
 
