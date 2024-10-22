@@ -12,7 +12,7 @@ variable "tags" {
 
 variable "name" {
   description = "Resource name prefix."
-  default     = "oneadkv"
+  type        = string
 }
 
 variable "location" {
@@ -23,7 +23,6 @@ variable "location" {
 variable "rg_name" {
   description = "The name of an existing resource group to create the resource in."
   type        = string
-  default     = ""
 }
 
 variable "agw_subnet_address_prefixes" {
